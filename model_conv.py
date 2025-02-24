@@ -2,7 +2,8 @@ import os.path
 import sys
 from os import system
 
-import gym
+# import gym
+import gymnasium as gym
 import torch
 import torchsummary
 import onnx
@@ -10,17 +11,26 @@ import onnx_tf.backend
 import tensorflow as tf
 
 from stable_baselines3 import SAC
+from sb3_contrib import SACD
+
+import sys
+
+sys.path.append("/home/paul/Documents/PhD/RL/MARL_CAVs_commonroad/highway-env/")
+import highway_env
+
+import torch as th
 
 
 class OnnxablePolicy(torch.nn.Module):
     def __init__(self, actor):
         super(OnnxablePolicy, self).__init__()
-        self.actor = torch.nn.Sequential(actor.latent_pi, actor.mu)
+        # self.actor = torch.nn.Sequential(actor.latent_pi, actor.mu)
+        self.actor = actor.latent_pi
 
     def forward(self, observation):
         # NOTE: You may have to process (normalize) observation in the correct
         #       way before using this. See `common.preprocessing.preprocess_obs`
-        return self.actor(observation)
+        return th.argmax(self.actor(observation))
 
 
 if __name__ == "__main__":
@@ -46,7 +56,8 @@ if __name__ == "__main__":
     dummy_input = torch.FloatTensor(obs.sample().reshape(1, -1))
 
     print("Loading existing SB3 model...")
-    model = SAC.load(model_save_file, env, verbose=True)
+    # model = SAC.load(model_save_file, env, verbose=True)
+    model = SACD.load(model_save_file, env, verbose=True)
 
     print("Exporting to ONNX...")
     onnxable_model = OnnxablePolicy(model.policy.actor)

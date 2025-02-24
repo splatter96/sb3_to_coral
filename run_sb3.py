@@ -1,9 +1,17 @@
 import sys
-import gym
+
+# import gym
+import gymnasium as gym
 
 import time
 
 from stable_baselines3 import SAC
+from sb3_contrib import SACD
+
+import sys
+
+sys.path.append("/home/paul/Documents/PhD/RL/MARL_CAVs_commonroad/highway-env/")
+import highway_env
 
 if __name__ == "__main__":
     env_name = "MountainCarContinuous-v0"
@@ -17,17 +25,20 @@ if __name__ == "__main__":
         model_prefix = sys.argv[2]
     model_save_file = model_prefix + ".zip"
 
-    env = gym.make(env_name, render_mode="human")
+    env = gym.make(env_name)  # , render_mode="human")
     obs, _ = env.reset()
 
-    model = SAC.load(model_save_file, env)
+    if "merge" in env_name:
+        model = SACD.load(model_save_file, env)
+    else:
+        model = SAC.load(model_save_file, env)
 
     for i in range(100000):
         start = time.time()
         action, _state = model.predict(obs, deterministic=True)
         end = time.time()
-        print(f"Inference took {end-start}s")
+        print(f"Inference took {(end-start)*1000}ms")
         obs, reward, done, _, info = env.step(action)
         env.render()
         if done:
-            obs = env.reset()
+            obs, _ = env.reset()

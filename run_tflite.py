@@ -1,7 +1,13 @@
 import sys
-import gym
+import numpy as np
+
+# import gym
+import gymnasium as gym
 import tflite_runtime.interpreter as tflite
 import time
+
+sys.path.append("/home/paul/Documents/PhD/RL/MARL_CAVs_commonroad/highway-env/")
+import highway_env
 
 if __name__ == "__main__":
     env_name = "MountainCarContinuous-v0"
@@ -21,7 +27,7 @@ if __name__ == "__main__":
     if "edgetpu" in model_save_file:
         delegates = [tflite.load_delegate("libedgetpu.so.1")]
 
-    env = gym.make(env_name, render_mode="human")
+    env = gym.make(env_name)  # , render_mode="human")
     obs, _ = env.reset()
 
     interpreter = tflite.Interpreter(
@@ -35,13 +41,13 @@ if __name__ == "__main__":
 
     for i in range(100000):
         start = time.time()
-        input_data = obs.reshape(1, -1)
+        input_data = obs.reshape(1, -1).astype(np.float32)
         interpreter.set_tensor(input_details[0]["index"], input_data)
 
         interpreter.invoke()
         output_data = interpreter.get_tensor(output_details[0]["index"])
         end = time.time()
-        print(f"Inference took {end-start}s")
+        print(f"Inference took {(end-start)*1000}ms")
 
         obs, reward, done, _, info = env.step(output_data)
         env.render()
