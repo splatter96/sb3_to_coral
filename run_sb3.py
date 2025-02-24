@@ -10,7 +10,7 @@ from sb3_contrib import SACD
 
 import sys
 
-sys.path.append("/home/paul/Documents/PhD/RL/MARL_CAVs_commonroad/highway-env/")
+sys.path.append("./highway-env/")
 import highway_env
 
 if __name__ == "__main__":

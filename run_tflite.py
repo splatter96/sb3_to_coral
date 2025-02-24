@@ -6,7 +6,7 @@ import gymnasium as gym
 import tflite_runtime.interpreter as tflite
 import time
 
-sys.path.append("/home/paul/Documents/PhD/RL/MARL_CAVs_commonroad/highway-env/")
+sys.path.append("./highway-env/")
 import highway_env
 
 if __name__ == "__main__":

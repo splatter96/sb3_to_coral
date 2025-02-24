@@ -6,7 +6,7 @@ import onnxruntime as ort
 import numpy as np
 import time
 
-sys.path.append("/home/paul/Documents/PhD/RL/MARL_CAVs_commonroad/highway-env/")
+sys.path.append("./highway-env/")
 import highway_env
 
 if __name__ == "__main__":
