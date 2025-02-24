@@ -1,10 +1,14 @@
 import sys
 import gym
 import tflite_runtime.interpreter as tflite
+import time
 
-if __name__ == '__main__':
-    env_name = 'MountainCarContinuous-v0'
-    model_prefix = 'model_quant'
+if __name__ == "__main__":
+    env_name = "MountainCarContinuous-v0"
+    # model_prefix = 'model_quant'
+    # model_prefix = "MountainCarContinuous-v0_quant"
+    # model_prefix = "MountainCarContinuous-v0"
+    model_prefix = "MountainCarContinuous-v0_quant_edgetpu"
     if len(sys.argv) < 3:
         print("Usage: " + str(sys.argv[0]) + " <envname> <model_prefix>")
         print(" Defaulting to env: " + env_name + ", model_prefix: " + model_prefix)
@@ -14,13 +18,15 @@ if __name__ == '__main__':
     model_save_file = model_prefix + ".tflite"
 
     delegates = None
-    if 'edgetpu' in model_save_file:
-        delegates = [tflite.load_delegate('libedgetpu.so.1')]
+    if "edgetpu" in model_save_file:
+        delegates = [tflite.load_delegate("libedgetpu.so.1")]
 
-    env = gym.make(env_name)
-    obs = env.reset()
+    env = gym.make(env_name, render_mode="human")
+    obs, _ = env.reset()
 
-    interpreter = tflite.Interpreter(model_path=model_save_file, experimental_delegates=delegates)
+    interpreter = tflite.Interpreter(
+        model_path=model_save_file, experimental_delegates=delegates
+    )
     interpreter.allocate_tensors()
 
     # Get input and output tensors.
@@ -28,16 +34,16 @@ if __name__ == '__main__':
     output_details = interpreter.get_output_details()
 
     for i in range(100000):
-
+        start = time.time()
         input_data = obs.reshape(1, -1)
-        interpreter.set_tensor(input_details[0]['index'], input_data)
+        interpreter.set_tensor(input_details[0]["index"], input_data)
 
         interpreter.invoke()
-        output_data = interpreter.get_tensor(output_details[0]['index'])
+        output_data = interpreter.get_tensor(output_details[0]["index"])
+        end = time.time()
+        print(f"Inference took {end-start}s")
 
-        obs, reward, done, info = env.step(output_data)
+        obs, reward, done, _, info = env.step(output_data)
         env.render()
         if done:
-            obs = env.reset()
-
-
+            obs, _ = env.reset()
